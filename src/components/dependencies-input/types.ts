@@ -1,5 +1,4 @@
 export type FormProps = {
-  showClearButton: boolean;
-  onShowClick: (input: string) => void;
-  onClearClick: () => void;
+  onSubmit: (input: string) => void;
+  onInputChange: () => void;
 };

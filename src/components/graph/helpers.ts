@@ -1,4 +1,5 @@
 import { DEPENDS, NEW_LINE, WHITESPACE } from './constants';
+import { ERROR_MESSAGES } from './strings';
 import {
   StringArrayDictionary,
   NumberDictionary,
@@ -8,7 +9,7 @@ import {
 /**
  * This function will return the level for a given component
  * @param id              Id of the component
- * @param componentsLevel Levels dictionary
+ * @param componentsLevel Components level dictionary
  * @returns
  */
 const getDependencyLevel = (id: string, componentsLevel: NumberDictionary) => {
@@ -16,45 +17,82 @@ const getDependencyLevel = (id: string, componentsLevel: NumberDictionary) => {
 };
 
 /**
- * This function will set the level for each of the dependencies of a component and for those dependencies' dependencies as well
- * @param id              Id of the component
- * @param level           Level of the component
- * @param dependencies    Dependencies dictionary
- * @param componentsLevel Components level dictionary
- * @param relations       Relations dictionary
+ * This function will set the level for each of the dependencies of a component and for its dependencies' dependencies as well
+ * @param id                  Id of the component
+ * @param level               Level of the component
+ * @param dependencies        Dependencies dictionary
+ * @param componentsLevel     Components level dictionary
+ * @param sequence            Dependency sequence
+ * @param circularDependency  Circular dependency array
  * @returns
  */
 const setDependenciesLevel = (
   id: string,
   level: number,
   dependencies: StringArrayDictionary,
-  componentsLevel: NumberDictionary
+  componentsLevel: NumberDictionary,
+  sequence: NumberDictionary,
+  circularDependency: Array<string>
 ) => {
   // If the provided component doesn't have dependencies, return
   if (!dependencies[id]) {
     return;
   }
 
-  // Loop the dependencies
-  dependencies[id].forEach((depId) => {
+  // Loop the component dependencies
+  for (let i = 0; i < dependencies[id].length; i++) {
+    const dependencySequence = { ...sequence };
+    const depId = dependencies[id][i];
+
+    // If the current dependency is already part of the dependency sequence, there's a circular dependency
+    if (dependencySequence[depId]) {
+      Object.keys(dependencySequence).forEach((id) => {
+        circularDependency[dependencySequence[id]] = id;
+      });
+
+      if (circularDependency[0]) {
+        circularDependency.push(depId);
+      }
+
+      break;
+    }
+
+    // If the current dependency is not part of the dependency sequence, add it
+    dependencySequence[depId] = Object.keys(dependencySequence).length;
     let depLevel = getDependencyLevel(depId, componentsLevel);
 
     // If the dependency is not included in the dictionary, include it and do the same for its dependencies recursively
     if (depLevel === -1) {
       depLevel = level + 1;
       componentsLevel[depId] = depLevel;
-      setDependenciesLevel(depId, depLevel, dependencies, componentsLevel);
+      setDependenciesLevel(
+        depId,
+        depLevel,
+        dependencies,
+        componentsLevel,
+        dependencySequence,
+        circularDependency
+      );
     } else {
-      // If the dependency is included in the dictionary but its level (depLevel) is nearer to the root than the level of the
-      // component that depends on it (level), replace the current level of the dependency (depLevel) with the level that
-      // follows the component's level (level + 1) and do the same for its dependencies recursively
+      // If the dependency is included in the dictionary but its level is not below the level of the component, change it to
+      // a level below the component's one (level + 1)
       if (depLevel <= level) {
         depLevel = level + 1;
         componentsLevel[depId] = depLevel;
-        setDependenciesLevel(depId, depLevel, dependencies, componentsLevel);
+        setDependenciesLevel(
+          depId,
+          depLevel,
+          dependencies,
+          componentsLevel,
+          dependencySequence,
+          circularDependency
+        );
       }
     }
-  });
+
+    // If the circular dependency array is not empty, break out of the loop
+    if (circularDependency.length > 0) break;
+  }
 };
 
 /**
@@ -65,6 +103,9 @@ const setDependenciesLevel = (
 export const getDependencyGraphLevels = (
   dependencies: StringArrayDictionary
 ) => {
+  // Array to be filled with components that are part of a circular dependency
+  const circularDependency: Array<string> = [];
+
   // Dictionary with the level in which each component should be placed in the graph
   const componentsLevel: NumberDictionary = {};
 
@@ -72,18 +113,38 @@ export const getDependencyGraphLevels = (
   const levels: StringArrayDictionary = {};
 
   // Loop the components in the dependencies dictionary
-  Object.keys(dependencies).forEach((id: string) => {
+  for (let i = 0; i < Object.keys(dependencies).length; i++) {
+    const id = Object.keys(dependencies)[i];
+    const sequence = { [id]: 0 };
+
     let level = getDependencyLevel(id, componentsLevel);
 
     // If the component is not included in the dictionary, include it and do the same for its dependencies recursively
     if (level === -1) {
       level = 0;
       componentsLevel[id] = level;
-      setDependenciesLevel(id, level, dependencies, componentsLevel);
-    }
-  });
+      setDependenciesLevel(
+        id,
+        level,
+        dependencies,
+        componentsLevel,
+        sequence,
+        circularDependency
+      );
 
-  // Loop the components' level dictionary to populate the levels dictionary
+      // If the circular dependency array is not empty, return an object including it
+      if (circularDependency.length > 0) {
+        if (!circularDependency[0]) {
+          circularDependency[0] = id;
+          return { circularDependency };
+        }
+
+        return { circularDependency };
+      }
+    }
+  }
+
+  // Loop the components level dictionary to populate the levels dictionary
   Object.keys(componentsLevel).forEach((component) => {
     const level = componentsLevel[component];
 
@@ -103,10 +164,10 @@ export const getDependencyGraphLevels = (
  * @returns
  */
 export const validateInput = (input: string): ValidationResult => {
-  // Validation RegEx
+  // Validation RegEx (additional whitespaces between the elements will be accepted)
   const validLine = /^([a-z]+) +DEPENDS +((?:[a-z]+ *)+)$/i;
 
-  // Components dependencies dictionary
+  // Dependencies dictionary
   const dependencies: StringArrayDictionary = {};
   let error;
 
@@ -116,43 +177,40 @@ export const validateInput = (input: string): ValidationResult => {
 
     // If the line is not valid, return error
     if (!result) {
-      error = {
-        line: i + 1,
-        message:
-          'Line must follow the input specification. Valid component names are contiguous strings of letters, special characters are not admitted.',
-      };
-
+      error = { line: i + 1, message: ERROR_MESSAGES.INVALID_RULE_FORMAT };
       return;
     }
 
-    // If the line is valid, set its dependencies in the dictionary
     const component = result[1].toUpperCase();
-    const dependenciesString = result[2].toUpperCase();
+    const componentDependenciesString = result[2].toUpperCase();
 
     // Remove empty strings and duplicates
     const componentDependencies = [
       ...new Set(
-        dependenciesString
+        componentDependenciesString
           .split(WHITESPACE)
           .filter((dependency) => dependency !== '')
       ),
     ];
 
-    // If the name of one of the component dependencies is "depends", return error
+    // If one of the component dependencies is "depends", return error
     if (componentDependencies.includes(DEPENDS)) {
-      error = {
-        line: i + 1,
-        message:
-          'Line must follow the input specification. "Depends" is a reserved word.',
-      };
-
+      error = { line: i + 1, message: ERROR_MESSAGES.RESERVED_WORD };
       return;
     }
 
+    // If one of the component dependencies is the component itself, return error
+    if (componentDependencies.includes(component)) {
+      error = {
+        line: i + 1,
+        message: ERROR_MESSAGES.CIRCULAR_DEPENDENCY([component, component]),
+      };
+      return;
+    }
+
+    // If the line is valid, set component dependencies in the dictionary
     dependencies[component] = componentDependencies;
   });
-
-  // TODO: Get circular dependencies
 
   return { dependencies, error };
 };

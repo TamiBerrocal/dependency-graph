@@ -10,14 +10,13 @@ function App() {
     <div className="App">
       <Header />
       <DependenciesInput
-        showClearButton={showGraph} // Show the "Clear" button only when the graph is displayed on screen
-        onShowClick={(input) => {
+        onSubmit={(input) => {
           setInput(input);
           setShowGraph(true);
         }}
-        onClearClick={() => setShowGraph(false)}
+        onInputChange={() => setShowGraph(false)}
       />
-      {/* Show the graph when the "Show" button is clicked and hide it when the "Clear" button is clicked */}
+      {/* Show the graph when the button is clicked and hide it when the input is changed */}
       {showGraph && <Graph dependencies={input} />}
     </div>
   );
