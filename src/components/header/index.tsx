@@ -1,10 +1,11 @@
 import './styles.css';
 import { TITLE } from './strings';
+import { DATA_TESTID } from '../../data-testid';
 
 export const Header = () => (
-  <header className="Header" data-testid="header">
+  <header className="Header" data-testid={DATA_TESTID.HEADER}>
     <h1 className="Title">{TITLE}</h1>
-    <p className="Description" data-testid="description">
+    <p className="Description" data-testid={DATA_TESTID.DESCRIPTION}>
       Given an input of dependencies this app will produce a graph with a visual
       representation of them.
       <br />

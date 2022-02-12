@@ -1,3 +1,5 @@
 export type FormProps = {
-  onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  showClearButton: boolean;
+  onShowClick: (input: string) => void;
+  onClearClick: () => void;
 };

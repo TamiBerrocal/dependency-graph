@@ -1,0 +1,27 @@
+.GraphContainer {
+  width: 100%;
+}
+
+.Row {
+  width: fit-content;
+  margin: 0 auto 5rem auto;
+  display: flex;
+  gap: 5rem;
+}
+
+.Component {
+  width: fit-content;
+  padding: 0.5rem;
+  border: 2px solid #b2cce5;
+  color: #b2cce5;
+}
+
+.Error {
+  width: 100%;
+  background-color: #f1d2d2;
+  padding: 0.5em;
+  border: 2px solid #e08283;
+  box-sizing: border-box;
+  border-radius: 4px;
+  color: #282c34;
+}
