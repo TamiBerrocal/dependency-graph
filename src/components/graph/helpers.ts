@@ -12,7 +12,10 @@ import {
  * @param componentsLevel Components level dictionary
  * @returns
  */
-const getDependencyLevel = (id: string, componentsLevel: NumberDictionary) => {
+export const getDependencyLevel = (
+  id: string,
+  componentsLevel: NumberDictionary
+) => {
   return componentsLevel[id] || -1;
 };
 
@@ -26,7 +29,7 @@ const getDependencyLevel = (id: string, componentsLevel: NumberDictionary) => {
  * @param circularDependency  Circular dependency array
  * @returns
  */
-const setDependenciesLevel = (
+export const setDependenciesLevel = (
   id: string,
   level: number,
   dependencies: StringArrayDictionary,
