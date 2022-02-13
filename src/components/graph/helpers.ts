@@ -22,7 +22,6 @@ export const getDependencyLevel = (
 /**
  * This function will set the level for each of the dependencies of a component and for its dependencies' dependencies as well
  * @param id                  Id of the component
- * @param level               Level of the component
  * @param dependencies        Dependencies dictionary
  * @param componentsLevel     Components level dictionary
  * @param sequence            Dependency sequence
@@ -31,7 +30,6 @@ export const getDependencyLevel = (
  */
 export const setDependenciesLevel = (
   id: string,
-  level: number,
   dependencies: StringArrayDictionary,
   componentsLevel: NumberDictionary,
   sequence: NumberDictionary,
@@ -48,20 +46,17 @@ export const setDependenciesLevel = (
     const depId = dependencies[id][i];
 
     // If the current dependency is already part of the dependency sequence, there's a circular dependency
-    if (dependencySequence[depId]) {
+    if (dependencySequence[depId] !== undefined) {
       Object.keys(dependencySequence).forEach((id) => {
         circularDependency[dependencySequence[id]] = id;
       });
-
-      if (circularDependency[0]) {
-        circularDependency.push(depId);
-      }
-
+      circularDependency.push(depId);
       break;
     }
 
     // If the current dependency is not part of the dependency sequence, add it
     dependencySequence[depId] = Object.keys(dependencySequence).length;
+    const level = componentsLevel[id];
     let depLevel = getDependencyLevel(depId, componentsLevel);
 
     // If the dependency is not included in the dictionary, include it and do the same for its dependencies recursively
@@ -70,7 +65,6 @@ export const setDependenciesLevel = (
       componentsLevel[depId] = depLevel;
       setDependenciesLevel(
         depId,
-        depLevel,
         dependencies,
         componentsLevel,
         dependencySequence,
@@ -84,7 +78,6 @@ export const setDependenciesLevel = (
         componentsLevel[depId] = depLevel;
         setDependenciesLevel(
           depId,
-          depLevel,
           dependencies,
           componentsLevel,
           dependencySequence,
@@ -128,7 +121,6 @@ export const getDependencyGraphLevels = (
       componentsLevel[id] = level;
       setDependenciesLevel(
         id,
-        level,
         dependencies,
         componentsLevel,
         sequence,
@@ -137,11 +129,6 @@ export const getDependencyGraphLevels = (
 
       // If the circular dependency array is not empty, return an object including it
       if (circularDependency.length > 0) {
-        if (!circularDependency[0]) {
-          circularDependency[0] = id;
-          return { circularDependency };
-        }
-
         return { circularDependency };
       }
     }

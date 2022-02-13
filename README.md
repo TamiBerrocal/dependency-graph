@@ -6,6 +6,8 @@ Draw a dependency graph diagram from a string input.
 
 ![Dependency graph](public/dependency-graph.png)
 
+Come and take a look: https://dependency-graph-deployed.herokuapp.com/
+
 ## How to run the app
 
 Clone this repo and go to the project directory. Then run `npm install` (make sure you have Node.js already installed) and `npm start` to start the app in development mode or `npm run start:prod` to start the app in production mode.
