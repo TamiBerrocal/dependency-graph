@@ -12,12 +12,13 @@
 .Component {
   width: fit-content;
   padding: 0.5rem;
-  border: 2px solid #b2cce5;
+  border: 1px solid #b2cce5;
+  border-radius: 4px;
   color: #b2cce5;
 }
 
 .Error {
-  width: 100%;
+  width: 80vmin;
   background-color: #f1d2d2;
   padding: 0.5em;
   border: 2px solid #e08283;

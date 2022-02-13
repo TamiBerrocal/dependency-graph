@@ -16,3 +16,7 @@ Open http://localhost:3000 to view it in the browser.
 ## How to test the app
 
 Go to the project directory and `npm test`.
+
+## Notes
+
+We are using [react-archer](https://www.npmjs.com/package/react-archer) to simplify the task of drawing the arrows that connect our nodes.

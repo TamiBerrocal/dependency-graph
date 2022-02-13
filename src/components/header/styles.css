@@ -5,6 +5,12 @@
   flex-direction: column;
 }
 
+.Logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 auto;
+}
+
 .Title {
   text-align: center;
   font-size: calc(14px + 4vmin);

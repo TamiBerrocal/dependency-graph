@@ -1,3 +1,4 @@
+// We'll be using https://www.npmjs.com/package/react-archer to simplify the task of drawing the arrows that connect our nodes
 import { ArcherContainer, ArcherElement } from 'react-archer';
 import './styles.css';
 import { GraphProps } from './types';

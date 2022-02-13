@@ -8,14 +8,16 @@ function App() {
 
   return (
     <div className="App">
-      <Header />
-      <DependenciesInput
-        onSubmit={(input) => {
-          setInput(input);
-          setShowGraph(true);
-        }}
-        onInputChange={() => setShowGraph(false)}
-      />
+      <div className="Main">
+        <Header />
+        <DependenciesInput
+          onSubmit={(input) => {
+            setInput(input);
+            setShowGraph(true);
+          }}
+          onInputChange={() => setShowGraph(false)}
+        />
+      </div>
       {/* Show the graph when the button is clicked and hide it when the input is changed */}
       {showGraph && <Graph dependencies={input} />}
     </div>
